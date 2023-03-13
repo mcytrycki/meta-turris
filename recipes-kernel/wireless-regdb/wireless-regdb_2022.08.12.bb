@@ -9,7 +9,14 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=07c4f6dea3845b02a18dc00c8c87699c"
 SRC_URI = "https://www.kernel.org/pub/software/network/wireless-regdb/wireless-regdb-2022.08.12.tar.xz"
 SRC_URI[sha256sum] = "59c8f7d17966db71b27f90e735ee8f5b42ca3527694a8c5e6e9b56bd379c3b84"
 
-inherit bin_package allarch
+inherit bin_package allarch pythonnative
+
+do_configure() {
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'triband-6g-capable', 'true', 'false', d)}; then
+        sed -i 's/(5925 - 7125 @ 320), (12), NO-OUTDOOR.*/(5925 - 7125 @ 320), (12), NO-OUTDOOR/' db.txt
+        (python db2fw.py db.txt regulatory.db)
+    fi
+}
 
 do_install() {
     install -d -m0755 ${D}${nonarch_libdir}/crda
